@@ -47,12 +47,21 @@
       border: 1px solid #ccc;
       display: none;
     }
+    input[type="email"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 20px;
+      font-size: 1rem;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
   </style>
 </head>
 <body>
   <div class="box">
     <h2>📘 Exam Proctoring</h2>
     <p>This tool launches a proctoring session. If a test link is attached, it will open only after permissions are granted.</p>
+    <input type="email" id="teacherEmail" placeholder="Enter teacher's email (optional)" />
     <button id="btn-start" class="start">Start Proctoring</button>
     <button id="btn-stop" class="stop" disabled>End Proctoring</button>
     <div id="status"></div>
@@ -120,6 +129,27 @@
       }
     }
 
+    async function sendReportByEmail(reportData) {
+      const teacherEmail = document.getElementById("teacherEmail").value.trim();
+      if (!teacherEmail) return;
+
+      try {
+        await fetch("https://formspree.io/f/your-form-id", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            _replyto: teacherEmail,
+            subject: "Exam Proctoring Report",
+            message: JSON.stringify(reportData, null, 2)
+          })
+        });
+      } catch (err) {
+        console.error("Failed to send report:", err);
+      }
+    }
+
     document.getElementById("btn-start").addEventListener("click", async () => {
       const examId = getQueryParam("exam");
       const testUrl = examId ? await fetchTestLink(examId) : null;
@@ -147,9 +177,9 @@
       }, { once: true });
     });
 
-    document.getElementById("btn-stop").addEventListener("click", () => {
+    document.getElementById("btn-stop").addEventListener("click", async () => {
       document.getElementById("status").innerText = "Ending session...";
-      apInstance.stop();
+      await apInstance.stop();
     });
 
     window.addEventListener("apMonitoringStopped", async () => {
@@ -157,6 +187,8 @@
         groupReportsIntoTabs: true,
         userDetails: { name: "Student", email: "noreply@exam.com" }
       };
+      const reportData = await apInstance.getReportData();
+      sendReportByEmail(reportData);
       apInstance.showReport(reportOptions);
       document.getElementById("status").innerText = "Proctoring ended. You may close this tab.";
     });
