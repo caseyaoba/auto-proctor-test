@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom AutoProctor Page</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdn.autoproctor.co/ap-entry.js"></script>
+    <style>
+        /* Include your CSS here */
+        .container {
+            margin: 0 auto;
+            max-width: 1200px;
+            padding: 20px;
+        }
+        .ctas {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+        .ctas button {
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #btn-start {
+            background-color: green;
+            color: white;
+        }
+        #btn-stop {
+            background-color: red;
+            color: white;
+        }
+        .flex {
+            display: flex;
+            align-items: center;
+        }
+        #ap-test-proctoring-status {
+            margin-bottom: 2px;
+            font-size: 3rem;
+            font-weight: bold;
+            margin-left: 14px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        #proctor-feedback {
+            margin-bottom: 2px;
+            background: none;
+            border-radius: 9999px;
+            transition: all 0.3s;
+            color: #ff9800;
+            font-weight: bolder;
+            font-size: 0.75rem;
+            padding: 8px 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="ap-proctoring-container">
+        <div class="ctas">
+            <button id="btn-start">Start</button>
+            <button id="btn-stop">Stop</button>
+        </div>
+        <div class="flex">
+            <div id="ap-test-proctoring-status"></div>
+            <div id="proctor-feedback"></div>
+        </div>
+    </div>
+    <div class="container" id="ap-report__overview"></div>
+    <div class="container" id="ap-report-tab-container"></div>
+
+    <script>
+        const CLIENT_ID = null; // INSERT YOUR ID HERE!!!!
+        const CLIENT_SECRET = null; // INSERT YOUR SECRET HERE!!!!
+
+        const getTestAttemptId = () => Math.random().toString(36).slice(2, 7);
+
+        function getHashTestAttemptId(testAttemptId) {
+            if (CLIENT_SECRET === null) {
+                return null;
+            } else {
+                const secretWordArray = CryptoJS.enc.Utf8.parse(CLIENT_SECRET);
+                const messageWordArray = CryptoJS.enc.Utf8.parse(testAttemptId);
+                const hash = CryptoJS.HmacSHA256(messageWordArray, secretWordArray);
+                const base64HashedString = CryptoJS.enc.Base64.stringify(hash);
+                return base64HashedString;
+            }
+        }
+
+        function getCredentials() {
+            const testAttemptId = getTestAttemptId();
+            const hashedTestAttemptId = getHashTestAttemptId(testAttemptId);
+            const creds = {
+                clientId: CLIENT_ID,
+                testAttemptId: testAttemptId,
+                hashedTestAttemptId: hashedTestAttemptId
+            };
+            return creds;
+        }
+
+        const getReportOptions = () => {
+            return {
+                groupReportsIntoTabs: true,
+                userDetails: {
+                    name: "First Last",
+                    email: "user@gmail.com"
+                }
+            };
+        };
+
+        const proctoringOptions = {
+            trackingOptions: {
+                audio: true,
+                numHumans: true,
+                tabSwitch: true,
+                photosAtRandom: false,
+                detectMultipleScreens: true,
+                forceFullScreen: false,
+                auxiliaryDevice: false,
+                recordSession: true
+            },
+            showHowToVideo: false
+        };
+
+        async function init() {
+            const credentials = getCredentials();
+            const apInstance = new AutoProctor(credentials);
+            await apInstance.setup(proctoringOptions);
+            document.getElementById("btn-start").addEventListener("click", () => apInstance.start());
+            window.addEventListener("apMonitoringStarted", () => {
+                document.getElementById("btn-start").disabled = true;
+                document.getElementById("btn-stop").disabled = false;
+                document.getElementById("ap-test-proctoring-status").innerHTML = "Proctoring...";
+            });
+            document.getElementById("btn-stop").addEventListener("click", () => apInstance.stop());
+            window.addEventListener("apMonitoringStopped", async () => {
+                const reportOptions = getReportOptions();
+                apInstance.showReport(reportOptions);
+                document.getElementById("ap-proctoring-container").style.visibility = "hidden";
+                document.getElementById("ap-test-proctoring-status").innerHTML = "Proctoring stopped";
+            });
+        }
+
+        window.addEventListener("load", init);
+    </script>
+</body>
+</html>
