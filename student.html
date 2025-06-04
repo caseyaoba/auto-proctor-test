@@ -65,6 +65,7 @@
     <button id="btn-start" class="start">Start Proctoring</button>
     <button id="btn-stop" class="stop" disabled>End Proctoring</button>
     <div id="status"></div>
+    <div id="confirmation" style="color: green; margin-top: 10px; font-weight: bold;"></div>
     <iframe id="testFrame"></iframe>
   </div>
 
@@ -130,24 +131,30 @@
     }
 
     async function sendReportByEmail(reportData) {
-      const teacherEmail = document.getElementById("teacherEmail").value.trim();
-      if (!teacherEmail) return;
+  const teacherEmail = document.getElementById("teacherEmail").value.trim();
+  const confirmation = document.getElementById("confirmation");
+  confirmation.innerText = "";
 
-      try {
-        await fetch("https://script.google.com/macros/s/AKfycbxiNBKEvxVxS6HhzIfw8edUnffAait1o6v9OUjWEprVhPvsIXBZ25-gSADjK_IpXTcuiA/exec", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            teacherEmail: teacherEmail,
-            report: reportData
-          })
-        });
-      } catch (err) {
-        console.error("Failed to send report:", err);
-      }
-    }
+  if (!teacherEmail) return;
+
+  try {
+    await fetch("https://script.google.com/macros/s/AKfycbxiNBKEvxVxS6HhzIfw8edUnffAait1o6v9OUjWEprVhPvsIXBZ25-gSADjK_IpXTcuiA/exec", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        teacherEmail: teacherEmail,
+        report: reportData
+      })
+    });
+    confirmation.innerText = "✅ Report sent to " + teacherEmail;
+  } catch (err) {
+    confirmation.innerText = "❌ Failed to send report.";
+    console.error("Failed to send report:", err);
+  }
+}
+
 
     document.getElementById("btn-start").addEventListener("click", async () => {
       const examId = getQueryParam("exam");
