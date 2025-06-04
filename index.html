@@ -7,7 +7,6 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="https://cdn.autoproctor.co/ap-entry.js"></script>
     <style>
-        /* Include your CSS here */
         .container {
             margin: 0 auto;
             max-width: 1200px;
@@ -60,25 +59,40 @@
             text-transform: uppercase;
             letter-spacing: 0.1em;
         }
+        iframe {
+            width: 100%;
+            height: 700px;
+            border: 1px solid #ccc;
+            margin-top: 20px;
+        }
     </style>
 </head>
 <body>
-    <div class="container" id="ap-proctoring-container">
-        <div class="ctas">
-            <button id="btn-start">Start</button>
-            <button id="btn-stop">Stop</button>
+    <div class="container">
+        <h2>Step 1: Enter the URL of your test (e.g., Google Form)</h2>
+        <input type="text" id="test-url" placeholder="https://forms.gle/..." style="width: 100%; padding: 10px; font-size: 1rem;">
+        <button onclick="loadTest()" style="margin-top: 10px; padding: 10px; font-size: 1rem;">Load Test</button>
+
+        <div class="container" id="ap-proctoring-container">
+            <div class="ctas">
+                <button id="btn-start">Start</button>
+                <button id="btn-stop">Stop</button>
+            </div>
+            <div class="flex">
+                <div id="ap-test-proctoring-status"></div>
+                <div id="proctor-feedback"></div>
+            </div>
         </div>
-        <div class="flex">
-            <div id="ap-test-proctoring-status"></div>
-            <div id="proctor-feedback"></div>
-        </div>
+
+        <iframe id="test-frame" src="" style="display:none;"></iframe>
+
+        <div class="container" id="ap-report__overview"></div>
+        <div class="container" id="ap-report-tab-container"></div>
     </div>
-    <div class="container" id="ap-report__overview"></div>
-    <div class="container" id="ap-report-tab-container"></div>
 
     <script>
-        const CLIENT_ID = null; // INSERT YOUR ID HERE!!!!
-        const CLIENT_SECRET = null; // INSERT YOUR SECRET HERE!!!!
+        const CLIENT_ID = bwLDu60g; // INSERT YOUR ID HERE!!!!
+        const CLIENT_SECRET = sTHZGlGLqg4L0J4; // INSERT YOUR SECRET HERE!!!!
 
         const getTestAttemptId = () => Math.random().toString(36).slice(2, 7);
 
@@ -97,12 +111,11 @@
         function getCredentials() {
             const testAttemptId = getTestAttemptId();
             const hashedTestAttemptId = getHashTestAttemptId(testAttemptId);
-            const creds = {
+            return {
                 clientId: CLIENT_ID,
                 testAttemptId: testAttemptId,
                 hashedTestAttemptId: hashedTestAttemptId
             };
-            return creds;
         }
 
         const getReportOptions = () => {
@@ -133,19 +146,32 @@
             const credentials = getCredentials();
             const apInstance = new AutoProctor(credentials);
             await apInstance.setup(proctoringOptions);
+
             document.getElementById("btn-start").addEventListener("click", () => apInstance.start());
+
             window.addEventListener("apMonitoringStarted", () => {
                 document.getElementById("btn-start").disabled = true;
                 document.getElementById("btn-stop").disabled = false;
                 document.getElementById("ap-test-proctoring-status").innerHTML = "Proctoring...";
             });
+
             document.getElementById("btn-stop").addEventListener("click", () => apInstance.stop());
+
             window.addEventListener("apMonitoringStopped", async () => {
                 const reportOptions = getReportOptions();
                 apInstance.showReport(reportOptions);
                 document.getElementById("ap-proctoring-container").style.visibility = "hidden";
                 document.getElementById("ap-test-proctoring-status").innerHTML = "Proctoring stopped";
             });
+        }
+
+        function loadTest() {
+            const url = document.getElementById("test-url").value;
+            const frame = document.getElementById("test-frame");
+            if (url) {
+                frame.src = url;
+                frame.style.display = "block";
+            }
         }
 
         window.addEventListener("load", init);
