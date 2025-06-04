@@ -54,7 +54,7 @@
     <h2>📘 Exam Proctoring</h2>
     <p>This tool launches a proctoring session. If a test link is attached, it will open only after permissions are granted.</p>
     <button id="btn-start" class="start">Start Proctoring</button>
-    <button id="btn-stop" class="stop" disabled>Stop & View Report</button>
+    <button id="btn-stop" class="stop" disabled>End Proctoring</button>
     <div id="status"></div>
     <iframe id="testFrame"></iframe>
   </div>
@@ -148,6 +148,7 @@
     });
 
     document.getElementById("btn-stop").addEventListener("click", () => {
+      document.getElementById("status").innerText = "Ending session...";
       apInstance.stop();
     });
 
