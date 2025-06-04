@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Teacher Link Generator</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      max-width: 600px;
+      margin: auto;
+    }
+    h1 {
+      font-size: 1.5rem;
+      margin-bottom: 20px;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    input, button {
+      width: 100%;
+      padding: 10px;
+      font-size: 1rem;
+      margin-bottom: 20px;
+    }
+    #output {
+      background-color: #f2f2f2;
+      padding: 10px;
+      border-radius: 4px;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+  <h1>Generate Student Test Link</h1>
+
+  <label for="testId">Test ID (e.g., math1, sci2)</label>
+  <input type="text" id="testId" placeholder="Enter test ID here">
+
+  <label for="baseUrl">Student Page URL</label>
+  <input type="text" id="baseUrl" value="https://yourdomain.github.io/student.html">
+
+  <button onclick="generateLink()">Generate Link</button>
+
+  <div id="output"></div>
+
+  <script>
+    function generateLink() {
+      const testId = document.getElementById('testId').value.trim();
+      const baseUrl = document.getElementById('baseUrl').value.trim();
+      if (!testId || !baseUrl) {
+        document.getElementById('output').innerText = 'Please enter both fields.';
+        return;
+      }
+      const finalUrl = `${baseUrl}?exam=${encodeURIComponent(testId)}`;
+      document.getElementById('output').innerText = finalUrl;
+    }
+  </script>
+</body>
+</html>
