@@ -102,9 +102,14 @@
     }
 
     async function fetchTestLink(testId) {
-      const res = await fetch('tests.json');
-      const data = await res.json();
-      return data[testId] || null;
+      try {
+        const res = await fetch('tests.json');
+        const data = await res.json();
+        return data[testId] || null;
+      } catch (e) {
+        alert("Could not load test list. Please contact your teacher.");
+        return null;
+      }
     }
 
     document.getElementById("btn-start").addEventListener("click", async () => {
@@ -117,10 +122,13 @@
       }
 
       await apInstance.start();
-      window.open(testUrl, "_blank");
-      document.getElementById("btn-start").disabled = true;
-      document.getElementById("btn-stop").disabled = false;
-      document.getElementById("status").innerText = "Proctoring active... complete your exam in the new tab.";
+
+      window.addEventListener("apMonitoringStarted", () => {
+        window.open(testUrl, "_blank");
+        document.getElementById("btn-start").disabled = true;
+        document.getElementById("btn-stop").disabled = false;
+        document.getElementById("status").innerText = "Proctoring active... complete your exam in the new tab.";
+      }, { once: true });
     });
 
     document.getElementById("btn-stop").addEventListener("click", () => {
