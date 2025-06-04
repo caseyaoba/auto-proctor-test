@@ -134,15 +134,14 @@
       if (!teacherEmail) return;
 
       try {
-        await fetch("https://formspree.io/f/your-form-id", {
+        await fetch("https://script.google.com/macros/s/AKfycbxiNBKEvxVxS6HhzIfw8edUnffAait1o6v9OUjWEprVhPvsIXBZ25-gSADjK_IpXTcuiA/exec", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
-            _replyto: teacherEmail,
-            subject: "Exam Proctoring Report",
-            message: JSON.stringify(reportData, null, 2)
+            teacherEmail: teacherEmail,
+            report: reportData
           })
         });
       } catch (err) {
