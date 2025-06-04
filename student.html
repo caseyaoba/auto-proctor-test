@@ -55,11 +55,6 @@
     const CLIENT_ID = "bwLDu60g";
     const CLIENT_SECRET = "sTHZGlGLqg4L0J4";
 
-    const testLinks = {
-      "math1": "https://docs.google.com/forms/d/e/1FAIpQLSfExampleMathForm/viewform",
-      "sci2": "https://docs.google.com/forms/d/e/1FAIpQLSfExampleScienceForm/viewform"
-    };
-
     function getQueryParam(name) {
       const urlParams = new URLSearchParams(window.location.search);
       return urlParams.get(name);
@@ -106,9 +101,15 @@
       await apInstance.setup(proctoringOptions);
     }
 
+    async function fetchTestLink(testId) {
+      const res = await fetch('tests.json');
+      const data = await res.json();
+      return data[testId] || null;
+    }
+
     document.getElementById("btn-start").addEventListener("click", async () => {
       const examId = getQueryParam("exam");
-      const testUrl = testLinks[examId];
+      const testUrl = await fetchTestLink(examId);
 
       if (!testUrl) {
         alert("Invalid or missing exam ID.");
