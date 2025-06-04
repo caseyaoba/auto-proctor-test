@@ -45,7 +45,7 @@
 <body>
   <div class="box">
     <h2>📘 Exam Proctoring</h2>
-    <p>Click the Start button below, then complete your test in the new tab.</p>
+    <p>This tool launches a proctoring session. If a test link is attached, it will open only after permissions are granted.</p>
     <button id="btn-start" class="start">Start Proctoring</button>
     <button id="btn-stop" class="stop" disabled>Stop & View Report</button>
     <div id="status"></div>
@@ -101,33 +101,30 @@
       await apInstance.setup(proctoringOptions);
     }
 
-    async function fetchTestLink(testId) {
+    async function fetchTestLink(examId) {
       try {
-        const res = await fetch('tests.json');
+        const res = await fetch("tests.json");
         const data = await res.json();
-        return data[testId] || null;
+        return data[examId] || null;
       } catch (e) {
-        alert("Could not load test list. Please contact your teacher.");
+        console.warn("Could not load test list or exam ID not found.");
         return null;
       }
     }
 
     document.getElementById("btn-start").addEventListener("click", async () => {
       const examId = getQueryParam("exam");
-      const testUrl = await fetchTestLink(examId);
-
-      if (!testUrl) {
-        alert("Invalid or missing exam ID.");
-        return;
-      }
+      const testUrl = examId ? await fetchTestLink(examId) : null;
 
       await apInstance.start();
 
       window.addEventListener("apMonitoringStarted", () => {
-        window.open(testUrl, "_blank");
+        if (testUrl) {
+          window.open(testUrl, "_blank");
+        }
         document.getElementById("btn-start").disabled = true;
         document.getElementById("btn-stop").disabled = false;
-        document.getElementById("status").innerText = "Proctoring active... complete your exam in the new tab.";
+        document.getElementById("status").innerText = "Proctoring active. Monitoring in progress.";
       }, { once: true });
     });
 
