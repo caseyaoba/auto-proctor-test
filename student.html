@@ -116,15 +116,22 @@
       const examId = getQueryParam("exam");
       const testUrl = examId ? await fetchTestLink(examId) : null;
 
+      if (examId && !testUrl) {
+        alert("Invalid or missing exam ID. Please check with your teacher.");
+      }
+
+      document.getElementById("status").innerText = "Initializing proctoring... please grant all permissions.";
       await apInstance.start();
 
       window.addEventListener("apMonitoringStarted", () => {
         if (testUrl) {
-          window.open(testUrl, "_blank");
+          document.getElementById("status").innerText = "Permissions granted. Launching your test...";
+          setTimeout(() => window.open(testUrl, "_blank"), 1000);
+        } else {
+          document.getElementById("status").innerText = "Proctoring active. Monitoring in progress.";
         }
         document.getElementById("btn-start").disabled = true;
         document.getElementById("btn-stop").disabled = false;
-        document.getElementById("status").innerText = "Proctoring active. Monitoring in progress.";
       }, { once: true });
     });
 
