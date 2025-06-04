@@ -75,13 +75,17 @@
     }
 
     function copyToClipboard() {
-      const tempText = document.createElement("textarea");
-      tempText.value = document.getElementById("output").innerText;
-      document.body.appendChild(tempText);
-      tempText.select();
-      document.execCommand("copy");
-      document.body.removeChild(tempText);
-    }
+  const linkElement = document.querySelector("#output a");
+  if (!linkElement) return;
+
+  const tempText = document.createElement("textarea");
+  tempText.value = linkElement.href;
+  document.body.appendChild(tempText);
+  tempText.select();
+  document.execCommand("copy");
+  document.body.removeChild(tempText);
+}
+
   </script>
 </body>
 </html>
