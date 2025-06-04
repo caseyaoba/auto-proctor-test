@@ -30,7 +30,17 @@
       background-color: #f2f2f2;
       padding: 10px;
       border-radius: 4px;
-      word-break: break-all;
+      word-break: break-word;
+    }
+    .link-area {
+      margin-top: 10px;
+    }
+    #copyBtn {
+      display: none;
+      background-color: #007BFF;
+      color: white;
+      border: none;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -44,19 +54,37 @@
   <input type="text" id="baseUrl" value="https://caseyaoba.github.io/auto-proctor-test/student.html">
 
   <button onclick="generateLink()">Generate Link</button>
+  <button id="copyBtn" onclick="copyLink()">Copy to Clipboard</button>
 
-  <div id="output"></div>
+  <div id="output" class="link-area"></div>
 
   <script>
     function generateLink() {
       const testId = document.getElementById('testId').value.trim();
       const baseUrl = document.getElementById('baseUrl').value.trim();
+      const output = document.getElementById('output');
+      const copyBtn = document.getElementById('copyBtn');
+
       if (!testId || !baseUrl) {
-        document.getElementById('output').innerText = 'Please enter both fields.';
+        output.innerText = '❗ Please enter both the Test ID and the Student Page URL.';
+        output.style.color = 'red';
+        copyBtn.style.display = 'none';
         return;
       }
+
       const finalUrl = `${baseUrl}?exam=${encodeURIComponent(testId)}`;
-      document.getElementById('output').innerText = finalUrl;
+      output.innerHTML = `<strong>✅ Student Test Link:</strong><br><a href="${finalUrl}" target="_blank" id="generatedLink">${finalUrl}</a>`;
+      output.style.color = 'black';
+      copyBtn.style.display = 'block';
+    }
+
+    function copyLink() {
+      const link = document.getElementById('generatedLink').href;
+      navigator.clipboard.writeText(link).then(() => {
+        alert('✅ Link copied to clipboard!');
+      }, () => {
+        alert('❌ Failed to copy link.');
+      });
     }
   </script>
 </body>
