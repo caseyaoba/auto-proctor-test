@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Teacher Link Generator</title>
   <style>
     body {
@@ -30,17 +30,17 @@
       background-color: #f2f2f2;
       padding: 10px;
       border-radius: 4px;
-      word-break: break-word;
-    }
-    .link-area {
-      margin-top: 10px;
+      word-break: break-all;
     }
     #copyBtn {
-      display: none;
-      background-color: #007BFF;
+      background-color: #007bff;
       color: white;
       border: none;
       cursor: pointer;
+      font-weight: bold;
+    }
+    #copyBtn:hover {
+      background-color: #0056b3;
     }
   </style>
 </head>
@@ -50,41 +50,37 @@
   <label for="testId">Test ID (e.g., practest1)</label>
   <input type="text" id="testId" placeholder="Enter test ID here">
 
+  <label for="teacherEmail">Teacher Email</label>
+  <input type="email" id="teacherEmail" placeholder="Enter your email">
+
   <label for="baseUrl">Student Page URL</label>
   <input type="text" id="baseUrl" value="https://caseyaoba.github.io/auto-proctor-test/student.html">
 
   <button onclick="generateLink()">Generate Link</button>
-  <button id="copyBtn" onclick="copyLink()">Copy to Clipboard</button>
+  <button id="copyBtn" onclick="copyToClipboard()">Copy to Clipboard</button>
 
-  <div id="output" class="link-area"></div>
+  <div id="output"></div>
 
   <script>
     function generateLink() {
       const testId = document.getElementById('testId').value.trim();
+      const teacherEmail = document.getElementById('teacherEmail').value.trim();
       const baseUrl = document.getElementById('baseUrl').value.trim();
-      const output = document.getElementById('output');
-      const copyBtn = document.getElementById('copyBtn');
-
       if (!testId || !baseUrl) {
-        output.innerText = '❗ Please enter both the Test ID and the Student Page URL.';
-        output.style.color = 'red';
-        copyBtn.style.display = 'none';
+        document.getElementById('output').innerText = 'Please enter both test ID and URL.';
         return;
       }
-
-      const finalUrl = `${baseUrl}?exam=${encodeURIComponent(testId)}`;
-      output.innerHTML = `<strong>✅ Student Test Link:</strong><br><a href="${finalUrl}" target="_blank" id="generatedLink">${finalUrl}</a>`;
-      output.style.color = 'black';
-      copyBtn.style.display = 'block';
+      const finalUrl = `${baseUrl}?exam=${encodeURIComponent(testId)}${teacherEmail ? `&teacher=${encodeURIComponent(teacherEmail)}` : ''}`;
+      document.getElementById('output').innerHTML = `<strong>✅ Student Test Link:</strong><br><a href="${finalUrl}" target="_blank">${finalUrl}</a>`;
     }
 
-    function copyLink() {
-      const link = document.getElementById('generatedLink').href;
-      navigator.clipboard.writeText(link).then(() => {
-        alert('✅ Link copied to clipboard!');
-      }, () => {
-        alert('❌ Failed to copy link.');
-      });
+    function copyToClipboard() {
+      const tempText = document.createElement("textarea");
+      tempText.value = document.getElementById("output").innerText;
+      document.body.appendChild(tempText);
+      tempText.select();
+      document.execCommand("copy");
+      document.body.removeChild(tempText);
     }
   </script>
 </body>
