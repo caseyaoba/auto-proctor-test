@@ -1,180 +1,207 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Custom AutoProctor Page</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
-    <script src="https://cdn.autoproctor.co/ap-entry.js"></script>
-    <style>
-        .container {
-            margin: 0 auto;
-            max-width: 1200px;
-            padding: 20px;
-        }
-        .ctas {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
-        .ctas button {
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        #btn-start {
-            background-color: green;
-            color: white;
-        }
-        #btn-stop {
-            background-color: red;
-            color: white;
-        }
-        .flex {
-            display: flex;
-            align-items: center;
-        }
-        #ap-test-proctoring-status {
-            margin-bottom: 2px;
-            font-size: 3rem;
-            font-weight: bold;
-            margin-left: 14px;
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-        #proctor-feedback {
-            margin-bottom: 2px;
-            background: none;
-            border-radius: 9999px;
-            transition: all 0.3s;
-            color: #ff9800;
-            font-weight: bolder;
-            font-size: 0.75rem;
-            padding: 8px 16px;
-            text-transform: uppercase;
-            letter-spacing: 0.1em;
-        }
-        iframe {
-            width: 100%;
-            height: 700px;
-            border: 1px solid #ccc;
-            margin-top: 20px;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Proctor Dashboard</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <script src="https://cdn.autoproctor.co/ap-entry.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      margin: 0 auto;
+      max-width: 1000px;
+      padding: 30px;
+      background: white;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      border-radius: 12px;
+      margin-top: 40px;
+    }
+    h2 {
+      font-weight: 600;
+      color: #333;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    select {
+      padding: 10px;
+      font-size: 1rem;
+      border-radius: 6px;
+      margin-top: 10px;
+    }
+    button {
+      padding: 12px 20px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: all 0.2s ease;
+    }
+    .start-btn { background-color: #4caf50; color: white; }
+    .start-btn:hover { background-color: #45a049; }
+    .stop-btn { background-color: #f44336; color: white; }
+    .stop-btn:hover { background-color: #e53935; }
+    .action-btn { margin-top: 12px; }
+    .proctor-status {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #1976d2;
+      margin-top: 10px;
+    }
+    iframe {
+      width: 100%;
+      height: 600px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-top: 20px;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h2>Step 1: Enter the URL of your test (e.g., Google Form)</h2>
-        <input type="text" id="test-url" placeholder="https://forms.gle/..." style="width: 100%; padding: 10px; font-size: 1rem;">
-        <button onclick="loadTest()" style="margin-top: 10px; padding: 10px; font-size: 1rem;">Load Test</button>
+  <div class="container">
+    <h2>🧑‍🏫 Teacher Mode: Start Proctored Exam</h2>
+    <label>Enter Class Name:</label>
+    <input type="text" id="class-name" placeholder="e.g., Grade10-DP-Math" />
 
-        <div class="container" id="ap-proctoring-container">
-            <div class="ctas">
-                <button id="btn-start">Start</button>
-                <button id="btn-stop">Stop</button>
-            </div>
-            <div class="flex">
-                <div id="ap-test-proctoring-status"></div>
-                <div id="proctor-feedback"></div>
-            </div>
-        </div>
+    <label style="margin-top: 15px; display: block;">Enter Test URL:</label>
+    <input type="text" id="test-url" placeholder="https://forms.gle/..." />
 
-        <iframe id="test-frame" src="" style="display:none;"></iframe>
+    <button class="start-btn action-btn" onclick="loadTest()">Load Test</button>
 
-        <div class="container" id="ap-report__overview"></div>
-        <div class="container" id="ap-report-tab-container"></div>
+    <div style="margin-top: 20px;">
+      <button id="btn-start" class="start-btn">Start Proctoring</button>
+      <button id="btn-stop" class="stop-btn">Stop & View Report</button>
     </div>
 
-    <script>
-        const CLIENT_ID = "bwLDu60g"; // INSERT YOUR ID HERE!!!!
-        const CLIENT_SECRET = "sTHZGlGLqg4L0J4"; // INSERT YOUR SECRET HERE!!!!
+    <div id="ap-test-proctoring-status" class="proctor-status"></div>
+    <div id="proctor-feedback"></div>
 
-        const getTestAttemptId = () => Math.random().toString(36).slice(2, 7);
+    <iframe id="test-frame" src="" style="display: none;"></iframe>
 
-        function getHashTestAttemptId(testAttemptId) {
-            if (CLIENT_SECRET === null) {
-                return null;
-            } else {
-                const secretWordArray = CryptoJS.enc.Utf8.parse(CLIENT_SECRET);
-                const messageWordArray = CryptoJS.enc.Utf8.parse(testAttemptId);
-                const hash = CryptoJS.HmacSHA256(messageWordArray, secretWordArray);
-                const base64HashedString = CryptoJS.enc.Base64.stringify(hash);
-                return base64HashedString;
-            }
+    <div id="ap-report__overview"></div>
+    <div id="ap-report-tab-container"></div>
+
+    <div style="margin-top: 20px;">
+      <button onclick="downloadReport()" class="action-btn" style="background:#1976d2;color:white;">📥 Download Report Snapshot</button>
+    </div>
+  </div>
+
+  <script>
+    const CLIENT_ID = "bwLDu60g";
+    const CLIENT_SECRET = "sTHZGlGLqg4L0J4";
+
+    const getTestAttemptId = () => Math.random().toString(36).slice(2, 7);
+
+    function getHashTestAttemptId(testAttemptId) {
+      if (!CLIENT_SECRET) return null;
+      const secretWordArray = CryptoJS.enc.Utf8.parse(CLIENT_SECRET);
+      const messageWordArray = CryptoJS.enc.Utf8.parse(testAttemptId);
+      const hash = CryptoJS.HmacSHA256(messageWordArray, secretWordArray);
+      return CryptoJS.enc.Base64.stringify(hash);
+    }
+
+    function getCredentials() {
+      const testAttemptId = getTestAttemptId();
+      const hashedTestAttemptId = getHashTestAttemptId(testAttemptId);
+      return {
+        clientId: CLIENT_ID,
+        testAttemptId,
+        hashedTestAttemptId
+      };
+    }
+
+    const getReportOptions = () => {
+      return {
+        groupReportsIntoTabs: true,
+        userDetails: {
+          name: document.getElementById("class-name").value || "Anonymous",
+          email: "noreply@exam.edu"
         }
+      };
+    };
 
-        function getCredentials() {
-            const testAttemptId = getTestAttemptId();
-            const hashedTestAttemptId = getHashTestAttemptId(testAttemptId);
-            return {
-                clientId: CLIENT_ID,
-                testAttemptId: testAttemptId,
-                hashedTestAttemptId: hashedTestAttemptId
-            };
-        }
+    const proctoringOptions = {
+      trackingOptions: {
+        audio: true,
+        numHumans: true,
+        tabSwitch: true,
+        photosAtRandom: false,
+        detectMultipleScreens: false,
+        forceFullScreen: false,
+        auxiliaryDevice: false,
+        recordSession: true
+      },
+      showHowToVideo: false
+    };
 
-        const getReportOptions = () => {
-            return {
-                groupReportsIntoTabs: true,
-                userDetails: {
-                    name: "First Last",
-                    email: "user@gmail.com"
-                }
-            };
-        };
+    let apInstance;
 
-        const proctoringOptions = {
-            trackingOptions: {
-                audio: true,
-                numHumans: true,
-                tabSwitch: true,
-                photosAtRandom: false,
-                detectMultipleScreens: true,
-                forceFullScreen: false,
-                auxiliaryDevice: false,
-                recordSession: true
-            },
-            showHowToVideo: false
-        };
+    async function init() {
+      const credentials = getCredentials();
+      apInstance = new AutoProctor(credentials);
+      await apInstance.setup(proctoringOptions);
 
-        async function init() {
-            const credentials = getCredentials();
-            const apInstance = new AutoProctor(credentials);
-            await apInstance.setup(proctoringOptions);
+      document.getElementById("btn-start").addEventListener("click", () => apInstance.start());
 
-            document.getElementById("btn-start").addEventListener("click", () => apInstance.start());
+      window.addEventListener("apMonitoringStarted", () => {
+        const status = document.getElementById("ap-test-proctoring-status");
+        const feedback = document.getElementById("proctor-feedback");
 
-            window.addEventListener("apMonitoringStarted", () => {
-                document.getElementById("btn-start").disabled = true;
-                document.getElementById("btn-stop").disabled = false;
-                document.getElementById("ap-test-proctoring-status").innerHTML = "Proctoring...";
-            });
+        document.getElementById("btn-start").disabled = true;
+        document.getElementById("btn-stop").disabled = false;
 
-            document.getElementById("btn-stop").addEventListener("click", () => apInstance.stop());
+        status.innerText = "🔴 Proctoring started...";
+        status.style.opacity = 0;
+        status.style.transition = "opacity 0.8s ease-in-out";
+        setTimeout(() => status.style.opacity = 1, 100);
 
-            window.addEventListener("apMonitoringStopped", async () => {
-                const reportOptions = getReportOptions();
-                apInstance.showReport(reportOptions);
-                document.getElementById("ap-proctoring-container").style.visibility = "hidden";
-                document.getElementById("ap-test-proctoring-status").innerHTML = "Proctoring stopped";
-            });
-        }
+        feedback.innerText = "Monitoring active. Please stay on this tab.";
+        feedback.style.backgroundColor = "#fff3cd";
+        feedback.style.border = "1px solid #ffeeba";
+        feedback.style.padding = "10px";
+        feedback.style.borderRadius = "6px";
+        feedback.style.marginTop = "10px";
+    });
 
-        function loadTest() {
-            const url = document.getElementById("test-url").value;
-            const frame = document.getElementById("test-frame");
-            if (url) {
-                frame.src = url;
-                frame.style.display = "block";
-            }
-        }
+      document.getElementById("btn-stop").addEventListener("click", () => apInstance.stop());
 
-        window.addEventListener("load", init);
-    </script>
+      window.addEventListener("apMonitoringStopped", async () => {
+        const reportOptions = getReportOptions();
+        apInstance.showReport(reportOptions);
+        document.getElementById("ap-test-proctoring-status").innerText = "🟢 Proctoring stopped.";
+      });
+    }
+
+    function loadTest() {
+      const url = document.getElementById("test-url").value;
+      if (url) {
+        window.open(url, "_blank");
+      }
+    }
+    }
+
+    function downloadReport() {
+      const content = document.getElementById("ap-report-tab-container").innerText;
+      const blob = new Blob([content], { type: 'text/plain' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `ProctorReport_${Date.now()}.txt`;
+      a.click();
+    }
+
+    window.addEventListener("load", init);
+  </script>
 </body>
 </html>
