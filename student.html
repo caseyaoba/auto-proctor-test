@@ -192,7 +192,16 @@
       document.getElementById("status").innerText = "Proctoring ended. You may close this tab.";
     });
 
-    window.onload = initProctor;
+    window.onload = () => {
+  initProctor();
+
+  // Pre-fill teacher email if present in URL
+  const teacherFromURL = getQueryParam("teacher");
+  if (teacherFromURL) {
+    document.getElementById("teacherEmail").value = teacherFromURL;
+  }
+};
+
   </script>
 </body>
 </html>
